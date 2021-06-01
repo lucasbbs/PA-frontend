@@ -1,0 +1,33 @@
+@font-face {
+  font-family: 'Nucleo';
+  src: url('../../../fonts/nucleo.eot');
+  src: url('../../../fonts/nucleo.eot') format('embedded-opentype'),
+    url('../../../fonts/nucleo.woff2') format('woff2'),
+    url('../../../fonts/nucleo.woff') format('woff'),
+    url('../../../fonts/nucleo.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+.incomes {
+  position: relative;
+}
+.incomes {
+  pointer-events: all;
+}
+.incomes:hover:after {
+  content: '\ea3d';
+  color: var(--primary);
+  font-family: 'Nucleo';
+  position: absolute;
+  top: -13px;
+  cursor: pointer;
+}
+.incomes:hover:before {
+  content: '\ea54';
+  color: var(--primary);
+  font-family: 'Nucleo';
+  position: absolute;
+  bottom: -13px;
+  left: calc(100%);
+  cursor: pointer;
+}
