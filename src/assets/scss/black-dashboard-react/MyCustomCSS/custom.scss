@@ -15,17 +15,19 @@
   pointer-events: all;
 }
 .incomes:hover:after {
-  content: '\ea3d';
+  content:'Edit';
+  // content: '\ea3d';
   color: var(--primary);
-  font-family: 'Nucleo';
+  // font-family: 'Nucleo';
   position: absolute;
   top: -13px;
   cursor: pointer;
 }
 .incomes:hover:before {
-  content: '\ea54';
+  content: 'Remove';
+  // content: '\ea54';
   color: var(--primary);
-  font-family: 'Nucleo';
+  // font-family: 'Nucleo';
   position: absolute;
   bottom: -13px;
   left: calc(100%);

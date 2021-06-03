@@ -1,22 +1,27 @@
-import { addDays } from 'date-fns';
-import format from 'date-fns/format';
-import ptBR from 'date-fns/locale/pt-BR';
+import { addDays } from "date-fns";
+import format from "date-fns/format";
+import ptBR from "date-fns/locale/pt-BR";
 // import { startOfMonth } from 'date-fns';
 
 export function reverseFormatNumber(val, locale) {
-  var group = new Intl.NumberFormat(locale).format(1111).replace(/1/g, '');
-  var decimal = new Intl.NumberFormat(locale).format(1.1).replace(/1/g, '');
+  var group = new Intl.NumberFormat(locale).format(1111).replace(/1/g, "");
+  var decimal = new Intl.NumberFormat(locale).format(1.1).replace(/1/g, "");
+  // try {
   var reversedVal = val
-    .replace(new RegExp('\\' + group, 'g'), '')
-    .replace(new RegExp('\\' + decimal, 'g'), '.')
-    .replace(/[^0-9.]/g, '');
+    .replace(new RegExp("\\" + group, "g"), "")
+    .replace(new RegExp("\\" + decimal, "g"), ".")
+    .replace(/[^0-9.]/g, "");
+  // } catch (error) {
+  //   console.log(error);
+  // }
+
   return Number.isNaN(reversedVal) ? 0 : Number(reversedVal);
 }
 
 export function currencyFormat(label) {
-  let formatCurrency = new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
+  let formatCurrency = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL"
   });
   return formatCurrency.format(Number(label));
 }
@@ -60,7 +65,7 @@ export const getDataForTheFirstChart = (
     labels.push(
       ...new Set(
         el.map((date) =>
-          format(addDays(new Date(date[0]), 1), 'MMM/yyyy', { locale: ptBR })
+          format(addDays(new Date(date[0]), 1), "MMM/yyyy", { locale: ptBR })
         )
       )
     );
@@ -82,21 +87,21 @@ export const handleSlicesOfInvestments = (
 ) => {
   const initialSlice =
     investments[1].indexOf(
-      format(new Date(initialDate), 'MMM/yyyy', { locale: ptBR })
+      format(new Date(initialDate), "MMM/yyyy", { locale: ptBR })
     ) === -1
       ? 0
       : investments[1].indexOf(
-          format(new Date(initialDate), 'MMM/yyyy', { locale: ptBR })
+          format(new Date(initialDate), "MMM/yyyy", { locale: ptBR })
         );
   const finalSlice =
     investments[1].indexOf(
-      format(new Date(finalDate), 'MMM/yyyy', { locale: ptBR })
+      format(new Date(finalDate), "MMM/yyyy", { locale: ptBR })
     ) + 1;
 
   return initialSlice !== -2 && finalSlice !== 0
     ? [
         investments[0].slice(initialSlice, finalSlice),
-        investments[1].slice(initialSlice, finalSlice),
+        investments[1].slice(initialSlice, finalSlice)
       ]
     : investments;
 };
@@ -106,10 +111,10 @@ export const getDataForTheInflationChart = (
   firstPeriod = undefined,
   lastPeriod = undefined
 ) => {
-  if (firstPeriod === undefined || firstPeriod === '-01') {
+  if (firstPeriod === undefined || firstPeriod === "-01") {
     firstPeriod = inflation[0].data;
   }
-  if (lastPeriod === undefined || lastPeriod === '-01') {
+  if (lastPeriod === undefined || lastPeriod === "-01") {
     lastPeriod = inflation[inflation.length - 1].data;
   }
 
@@ -122,7 +127,7 @@ export const getDataForTheInflationChart = (
   inflations = inflations.map((inf) => {
     return {
       data: inf.data,
-      valor: (cumulativeProduct(inf.valor) - 1) * 100,
+      valor: (cumulativeProduct(inf.valor) - 1) * 100
     };
   });
 
@@ -130,7 +135,7 @@ export const getDataForTheInflationChart = (
   const values = [];
   inflations.forEach((e) => {
     labels.push(
-      format(addDays(new Date(e.data), 1), 'MMM/yyyy', { locale: ptBR })
+      format(addDays(new Date(e.data), 1), "MMM/yyyy", { locale: ptBR })
     );
     values.push(e.valor);
   });
@@ -138,7 +143,7 @@ export const getDataForTheInflationChart = (
 };
 
 export const getDataForTheTopInvestmentsTable = (investments) => {
-  const currentMonth = '2021-03-01';
+  const currentMonth = "2021-03-01";
   let incomes = investments.map((investment) =>
     investment.incomes.filter(
       (date) =>
@@ -160,7 +165,7 @@ export const getDataForTheTopInvestmentsTable = (investments) => {
       investments[i].name,
       Object.values(incomes[i][0])[0] /
         (investments[i].initial_amount + investments[i].accrued_income),
-      investments[i].initial_amount + investments[i].accrued_income,
+      investments[i].initial_amount + investments[i].accrued_income
     ]);
   }
   return returns.sort((a, b) => b[2] - a[2]).slice(0, 7);

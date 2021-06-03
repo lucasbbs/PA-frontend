@@ -1,9 +1,9 @@
-import axios from 'axios';
-import { addDays, format, parse } from 'date-fns';
-import React, { useEffect, useRef, useState } from 'react';
-import NumberFormat from 'react-number-format';
-import { Link } from 'react-router-dom';
-import NotificationAlert from 'react-notification-alert';
+import axios from "axios";
+import { addDays, format, parse } from "date-fns";
+import React, { useEffect, useRef, useState } from "react";
+import NumberFormat from "react-number-format";
+import { Link } from "react-router-dom";
+import NotificationAlert from "react-notification-alert";
 
 import {
   Button,
@@ -20,10 +20,10 @@ import {
   ModalFooter,
   ModalHeader,
   Row,
-  Table,
-} from 'reactstrap';
-import { reverseFormatNumber } from '../../helpers/functions';
-import { ptBR } from 'date-fns/locale';
+  Table
+} from "reactstrap";
+import { reverseFormatNumber } from "../../helpers/functions";
+import { ptBR } from "date-fns/locale";
 
 const Incomes = ({
   incomes,
@@ -32,9 +32,10 @@ const Incomes = ({
   incomesToBeUpdated,
   setAccruedIncome,
   id,
+  setIsLoading
 }) => {
   const notificationAlertRef = useRef(null);
-  const notify = (message, type = 'success', place = 'tc') => {
+  const notify = (message, type = "success", place = "tc") => {
     var options = {};
     options = {
       place: place,
@@ -44,56 +45,55 @@ const Incomes = ({
         </div>
       ),
       type: type,
-      icon: 'tim-icons icon-bell-55',
-      autoDismiss: 7,
+      icon: "tim-icons icon-bell-55",
+      autoDismiss: 7
     };
     notificationAlertRef.current.notificationAlert(options);
   };
   const [valueIncome, setValueIncome] = useState(0);
-  const [dateIncome, setDateIncome] = useState(undefined);
+  const [dateIncome, setDateIncome] = useState("");
   const [modal, setModal] = useState(false);
   const [modalAddIncome, setModalAddIncome] = useState(false);
   const [isValid, setIsValid] = useState(true);
   const [isEdit, setIsEdit] = useState(false);
   const [updatedIncome, setUpdatedIncome] = useState(incomesToBeUpdated);
 
-  const [dateEl, setDateEl] = useState(format(new Date(), 'yyyy-MM'));
-  const [valueEl, setValueEl] = useState('0');
-  // const [index, setIndex] = useState(undefined);
+  const [isAdding, setIsAdding] = useState(false);
+  const [dateEl, setDateEl] = useState(format(new Date(), "yyyy-MM"));
+  const [valueEl, setValueEl] = useState("0");
 
   useEffect(() => {
-    console.log(isEdit);
+    if (isAdding) {
+      setIsAdding(false);
+      let incomeObject = {};
+      incomeObject[
+        format(parse(dateEl, "yyyy-MM", new Date()), "yyyy-MM-dd")
+      ] = reverseFormatNumber(valueEl);
 
-    console.log(updatedIncome);
+      var index = updatedIncome
+        .map((key) => Object.keys(key)[0])
+        .indexOf(Object.keys(incomeObject)[0]);
+      handleAddIncome({ incomes: updatedIncome }, dateEl, valueEl, index);
+    }
+  }, [updatedIncome]);
 
-    let incomeObject = {};
-    incomeObject[
-      format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
-    ] = reverseFormatNumber(valueEl);
-
-    var index = updatedIncome
-      .map((key) => Object.keys(key)[0])
-      .indexOf(Object.keys(incomeObject)[0]);
-    handleAddIncome({ incomes: updatedIncome }, dateEl, valueEl, index);
-  }, [updatedIncome, dateEl, valueEl]);
   const toggle = () => {
     setModal(!modal);
     setIsValid(true);
   };
   const toggleAddIncome = (e, value = undefined) => {
-    // console.log(value);
     setModalAddIncome(!modalAddIncome);
-    if (value) {
+    if (isEdit) {
       setIsEdit(false);
-      setDateIncome(undefined);
+      setDateIncome("");
       setValueIncome(0.0);
     }
   };
   const fun = (e, defaultValue = undefined) => {
     let inputEl = undefined;
-    // console.log(defaultValue);
+
     if (defaultValue === undefined) {
-      inputEl = document.querySelector('#ModalInputId').value;
+      inputEl = document.querySelector("#ModalInputId").value;
     } else {
       inputEl = defaultValue;
     }
@@ -109,17 +109,17 @@ const Incomes = ({
   };
 
   const handleIncome = () => {
+    setIsLoading(true);
     if (isEdit) {
+      setDateEl(document.querySelector("#IncomeDate").value);
       setIsEdit(false);
-      setDateIncome(null);
+      setDateIncome("");
       setValueIncome(0.0);
     }
-    setDateEl(document.querySelector('#IncomeDate').value);
-    setValueEl(document.querySelector('#IncomeValue').value);
 
     let incomeObject = {};
     incomeObject[
-      format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
+      format(parse(dateEl, "yyyy-MM", new Date()), "yyyy-MM-dd")
     ] = reverseFormatNumber(valueEl);
 
     const index = updatedIncome
@@ -127,8 +127,12 @@ const Incomes = ({
       .indexOf(Object.keys(incomeObject)[0]);
 
     if (index !== -1) {
-      updatedIncome[index] = incomeObject;
-      setUpdatedIncome(updatedIncome);
+      updatedIncome.splice(index, 1);
+      setUpdatedIncome(
+        [...updatedIncome, incomeObject].sort(
+          (a, b) => new Date(Object.keys(a)[0]) - new Date(Object.keys(b)[0])
+        )
+      );
     } else {
       setUpdatedIncome(
         [...updatedIncome, incomeObject].sort(
@@ -136,40 +140,33 @@ const Incomes = ({
         )
       );
     }
-    // console.log(updatedIncome);
-    // const incomesToBeUpdated = updatedIncome;
-    // // console.log(incomesToBeUpdated);
-    // const incomesObj = { incomes: incomesToBeUpdated };
+
     toggleAddIncome(null, true);
-    // return [incomesObj, index];
   };
   const handleAddIncome = async (incomesObj, index) => {
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
     await axios
-      .post(`/api/investments/${id}/incomes`, incomesObj, config)
+      .put(
+        `https://6r3yk.sse.codesandbox.io/api/investments/${id}/incomes`,
+        incomesObj
+      )
       .then((response) => {
+        setIsLoading(false);
         notify(
           `Você cadastrou com sucesso a receita para o período de ${format(
-            parse(dateEl, 'yyyy-MM', new Date()),
-            'MMM/yyyy',
+            parse(dateEl, "yyyy-MM", new Date()),
+            "MMM/yyyy",
             { locale: ptBR }
           )}`
         );
-        // console.log(incomes);
-        // console.log(updatedIncome);
         if (index === -1) {
           incomes.push([
-            format(parse(dateEl, 'yyyy-MM', new Date()), 'dd/MM/yyyy'),
-            reverseFormatNumber(valueEl),
+            format(parse(dateEl, "yyyy-MM", new Date()), "dd/MM/yyyy"),
+            reverseFormatNumber(valueEl)
           ]);
         } else {
           incomes[index] = [
-            format(parse(dateEl, 'yyyy-MM', new Date()), 'dd/MM/yyyy'),
-            reverseFormatNumber(valueEl),
+            format(parse(dateEl, "yyyy-MM", new Date()), "dd/MM/yyyy"),
+            reverseFormatNumber(valueEl)
           ];
         }
 
@@ -178,7 +175,7 @@ const Incomes = ({
           .map((key) => Object.keys(key).map((date) => date))
           .flat()
           .map((data) => {
-            let datePartes = data.split('-');
+            let datePartes = data.split("-");
             return `${datePartes[2]}/${datePartes[1]}/${datePartes[0]}`;
           });
 
@@ -203,49 +200,55 @@ const Incomes = ({
         );
       })
       .catch((err) => {
-        notify(err.response.data, 'danger');
+        setIsLoading(false);
+        notify(err.response.data, "danger");
       });
-    // fun(null, 15);
     if (index === -1) {
-      // window.location.reload(true);
     }
   };
 
   const handleRemoveIncome = async (input, removido) => {
+    setIsLoading(true);
+    // console.log(setIsLoading(true));
+
     let incomesObj = { incomes: input };
-    // console.log(
-    //   format(addDays(new Date(Object.keys(removido[0])[0]), 1), 'MMM/yyyy', {
-    //     locale: ptBR,
-    //   })
-    // );
     const config = {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      // headers: {
+      //   "Content-Type": "application/json"
+      // }
     };
     await axios
-      .post(`/api/investments/${id}/incomes`, incomesObj, config)
+      .put(
+        `https://6r3yk.sse.codesandbox.io/api/investments/${id}/incomes`,
+        incomesObj,
+        config
+      )
       .then((response) => {
+        setIsLoading(false);
         notify(
           `Você removeu com sucesso a receita do período de ${format(
             addDays(new Date(Object.keys(removido[0])[0]), 1),
-            'MMM/yyyy',
+            "MMM/yyyy",
             {
-              locale: ptBR,
+              locale: ptBR
             }
           )}`
         );
+      })
+      .catch((err) => {
+        setIsLoading(false);
+        notify(err.response.data, "danger");
       });
-    const dates = incomesToBeUpdated
+    const dates = updatedIncome
       .filter((invest) => Object.values(invest)[0] !== null)
       .map((key) => Object.keys(key).map((date) => date))
       .flat()
       .map((data) => {
-        let datePartes = data.split('-');
+        let datePartes = data.split("-");
         return `${datePartes[2]}/${datePartes[1]}/${datePartes[0]}`;
       });
 
-    const IncomesTemp = incomesToBeUpdated
+    const IncomesTemp = updatedIncome
       .filter((invest) => Object.values(invest)[0] !== null)
       .map((key) => Object.values(key)[0]);
 
@@ -258,7 +261,7 @@ const Incomes = ({
 
     setAccruedIncome(
       Number(
-        incomesToBeUpdated
+        updatedIncome
           .map((key) => Object.values(key)[0])
           .reduce((acc, curr) => acc + curr, 0)
           .toFixed(2)
@@ -267,7 +270,7 @@ const Incomes = ({
   };
   return (
     <div>
-      <div className='react-notification-alert-container'>
+      <div className="react-notification-alert-container">
         <NotificationAlert ref={notificationAlertRef} />
       </div>
       <Modal
@@ -275,41 +278,55 @@ const Incomes = ({
         toggle={() => toggleAddIncome(null, true)}
         keyboard={true}
       >
-        <ModalHeader toggle={() => toggleAddIncome(null, true)}>
+        <ModalHeader
+          toggle={() => {
+            toggleAddIncome(null, true);
+          }}
+        >
           Adicionar Receita
         </ModalHeader>
         <ModalBody>
           <FormGroup>
-            <Row className='align-items-center'>
-              <Col md='6'>
-                <Label style={{ marginBottom: '0' }}>Data do rendimento</Label>
+            <Row className="align-items-center">
+              <Col md="6">
+                <Label style={{ marginBottom: "0" }}>Data do rendimento</Label>
               </Col>
-              <Col md='6'>
+              <Col md="6">
                 <Input
-                  style={{ color: 'black', background: 'transparent' }}
+                  style={{ color: "black", background: "transparent" }}
                   readOnly={isEdit}
-                  id='IncomeDate'
-                  type='month'
+                  id="IncomeDate"
+                  type="month"
                   value={dateIncome}
+                  onChange={(e) => {
+                    setDateIncome(e.target.value);
+                    setDateEl(e.target.value);
+                  }}
                 />
               </Col>
             </Row>
-            <Row className='align-items-center' style={{ marginTop: '6px' }}>
-              <Col md='6'>
-                <Label style={{ marginBottom: '0' }}>Valor</Label>
+            <Row className="align-items-center" style={{ marginTop: "6px" }}>
+              <Col md="6">
+                <Label style={{ marginBottom: "0" }}>Valor</Label>
               </Col>
-              <Col md='6'>
+              <Col md="6">
                 <NumberFormat
-                  id='IncomeValue'
+                  id="IncomeValue"
                   value={valueIncome}
-                  style={{ color: 'black' }}
-                  // onChange={(e) => console.log(e.target.value)}
-                  type='text'
-                  placeholder='R$0.00'
-                  thousandSeparator={'.'}
-                  decimalSeparator={','}
-                  prefix={'R$'}
+                  style={{ color: "black" }}
+                  type="text"
+                  placeholder="R$0.00"
+                  thousandSeparator={"."}
+                  decimalSeparator={","}
+                  prefix={"R$"}
                   customInput={Input}
+                  onChange={(e) => {
+                    if (isEdit) {
+                      setDateEl(document.querySelector("#IncomeDate").value);
+                    }
+                    setValueIncome(e.target.value);
+                    setValueEl(e.target.value);
+                  }}
                 />
               </Col>
             </Row>
@@ -317,16 +334,19 @@ const Incomes = ({
         </ModalBody>
         <ModalFooter>
           <Button
-            color='primary'
-            onClick={() => handleIncome()}
-            style={{ margin: '0 20px 20px' }}
+            color="primary"
+            onClick={() => {
+              setIsAdding(true);
+              handleIncome();
+            }}
+            style={{ margin: "0 20px 20px" }}
           >
             Definir
           </Button>
           <Button
-            color='secondary'
+            color="secondary"
             onClick={() => toggleAddIncome(null, true)}
-            style={{ margin: '0 20px 20px' }}
+            style={{ margin: "0 20px 20px" }}
           >
             Voltar
           </Button>
@@ -340,19 +360,19 @@ const Incomes = ({
           <FormGroup>
             {isValid ? (
               <Input
-                type='number'
-                id='ModalInputId'
-                style={{ color: 'black' }}
+                type="number"
+                id="ModalInputId"
+                style={{ color: "black" }}
                 min={0}
                 max={15}
               />
             ) : (
               <>
                 <Input
-                  style={{ marginBottom: '20px', color: 'black' }}
+                  style={{ marginBottom: "20px", color: "black" }}
                   invalid
-                  type='number'
-                  id='ModalInputId'
+                  type="number"
+                  id="ModalInputId"
                   min={0}
                   max={15}
                 />
@@ -365,48 +385,49 @@ const Incomes = ({
         </ModalBody>
         <ModalFooter>
           <Button
-            color='primary'
+            color="primary"
             onClick={fun}
-            style={{ margin: '0 20px 20px' }}
+            style={{ margin: "0 20px 20px" }}
           >
             Definir
           </Button>
           <Button
-            color='secondary'
+            color="secondary"
             onClick={toggle}
-            style={{ margin: '0 20px 20px' }}
+            style={{ margin: "0 20px 20px" }}
           >
             Voltar
           </Button>
         </ModalFooter>
       </Modal>
-      <Card style={{ marginTop: '25px' }}>
+      <Card style={{ marginTop: "25px" }}>
         <CardHeader
           stlye={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
           }}
         >
-          <h4 className='title d-inline'>Receitas</h4>
-          <Link to='#' onClick={toggle}>
+          <h4 className="title d-inline">Receitas</h4>
+          <Link to="#" onClick={toggle}>
             <i
-              title='Defina quantas receitas de juros serão exibidas por página'
-              className='tim-icons icon-settings-gear-63'
-              style={{ float: 'right', marginLeft: '20px', fontSize: '1.5em' }}
+              title="Defina quantas receitas de juros serão exibidas por página"
+              className="tim-icons icon-settings-gear-63"
+              style={{ float: "right", marginLeft: "20px", fontSize: "1.5em" }}
             />
           </Link>
-          <Link to='#' onClick={toggleAddIncome}>
-            <i
-              title='Cadastrar uma nova receita de juros'
-              className='tim-icons icon-simple-add'
-              style={{ float: 'right', fontSize: '1.5em' }}
-            />
+          <Link to="#" onClick={toggleAddIncome}>
+            <span style={{ float: "right", fontSize: "1.5em" }}>+</span>
+            {/* <i
+              title="Cadastrar uma nova receita de juros"
+              className="tim-icons icon-simple-add"
+              style={{ float: "right", fontSize: "1.5em" }}
+            /> */}
           </Link>
         </CardHeader>
         <CardBody>
-          <Table className='tablesorter'>
-            <tbody className='text-primary'>
+          <Table className="tablesorter">
+            <tbody className="text-primary">
               <tr>
                 {incomes.map((data) => (
                   <td key={data[0]}>{data[0]}</td>
@@ -418,7 +439,7 @@ const Incomes = ({
                   <td key={key[0]}>
                     <span
                       id={key[0]}
-                      className='incomes'
+                      className="incomes"
                       onClick={(e) => {
                         if (e.target.offsetWidth + 6 < e.nativeEvent.offsetX) {
                           if (
@@ -426,61 +447,79 @@ const Incomes = ({
                             e.target.getBoundingClientRect().top
                           ) {
                             setIsEdit(true);
-                            setDateIncome(
-                              format(
-                                parse(e.target.id, 'dd/MM/yyyy', new Date()),
-                                'yyyy-MM'
-                              )
+                            const date = format(
+                              parse(e.target.id, "dd/MM/yyyy", new Date()),
+                              "yyyy-MM"
                             );
-
-                            setValueIncome(
-                              reverseFormatNumber(e.target.innerHTML)
+                            setDateIncome(date);
+                            const value = reverseFormatNumber(
+                              e.target.innerHTML
+                            );
+                            setValueIncome(value);
+                            const newObj = {};
+                            newObj[
+                              format(
+                                parse(e.target.id, "dd/MM/yyyy", new Date()),
+                                "yyyy-MM-dd"
+                              )
+                            ] = value;
+                            const newarray = updatedIncome;
+                            newarray.splice(
+                              updatedIncome
+                                .map((el) => Object.keys(el)[0])
+                                .indexOf(
+                                  format(
+                                    parse(
+                                      e.target.id,
+                                      "dd/MM/yyyy",
+                                      new Date()
+                                    ),
+                                    "yyyy-MM-dd"
+                                  )
+                                ),
+                              1,
+                              newObj
                             );
                             toggleAddIncome();
                           } else {
                             if (
                               window.confirm(
-                                'Você tem certeza de que deseja apagar essa receita?'
+                                "Você tem certeza de que deseja apagar essa receita?"
                               )
                             ) {
-                              const index = incomesToBeUpdated
+                              const index = updatedIncome
                                 .map((key) => Object.keys(key)[0])
                                 .indexOf(
                                   format(
                                     parse(
                                       e.target.id,
-                                      'dd/MM/yyyy',
+                                      "dd/MM/yyyy",
                                       new Date()
                                     ),
-                                    'yyyy-MM-dd'
+                                    "yyyy-MM-dd"
                                   )
                                 );
                               try {
                                 if (index !== -1) {
-                                  const removido = incomesToBeUpdated.splice(
+                                  const removido = updatedIncome.splice(
                                     index,
                                     1
                                   );
-                                  handleRemoveIncome(
-                                    incomesToBeUpdated,
-                                    removido
-                                  );
+                                  handleRemoveIncome(updatedIncome, removido);
                                 } else {
-                                  throw new Error('Erro');
+                                  throw new Error("Erro");
                                 }
                               } catch (error) {
-                                console.log(error.message);
+                                notify(error.message, "danger");
                               }
                             }
-
-                            console.log('Você quer remover essa receita');
                           }
                         }
                       }}
                     >
-                      {key[1].toLocaleString('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL',
+                      {key[1].toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL"
                       })}
                     </span>
                   </td>

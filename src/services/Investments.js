@@ -1,6 +1,8 @@
-import axios from 'axios';
+import axios from "axios";
 
-export async function fetchInvestments(id = '') {
-  const res = await axios(`/api/investments/${id}`);
+export async function fetchInvestments(id = "") {
+  const res = await axios(
+    `https://6r3yk.sse.codesandbox.io/api/investments/${id}`
+  );
   return res.data;
 }
