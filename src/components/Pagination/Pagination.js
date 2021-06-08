@@ -36,7 +36,7 @@ const PaginationUI = ({
           >
             <PaginationLink
               onClick={() => paginate(number)}
-              to={`/admin/investment/${id}/${number}#`}
+              to={`/app/investment/${id}/${number}#`}
             >
               {number}
             </PaginationLink>

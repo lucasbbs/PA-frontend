@@ -27,12 +27,8 @@ function format(label) {
   let formatCurrency = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
+    minimumFractionDigits: 2,
   });
-  // return label.toLocaleString('pt-BR', {
-  //   style: 'currency',
-  //   currency: 'BRL',
-  // });
-  // return label;
   return formatCurrency.format(Number(label));
 }
 let chart1_2_options = {

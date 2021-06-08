@@ -15,21 +15,45 @@
   pointer-events: all;
 }
 .incomes:hover:after {
-  content:'Edit';
-  // content: '\ea3d';
+  // content:'Edit';
+  content: '\ea3d';
   color: var(--primary);
-  // font-family: 'Nucleo';
+  font-family: 'Nucleo';
   position: absolute;
   top: -13px;
   cursor: pointer;
 }
 .incomes:hover:before {
-  content: 'Remove';
-  // content: '\ea54';
+  // content: 'Remove';
+  content: '\ea54';
   color: var(--primary);
-  // font-family: 'Nucleo';
+  font-family: 'Nucleo';
   position: absolute;
   bottom: -13px;
   left: calc(100%);
   cursor: pointer;
+}
+
+.bs-popover-top > .arrow::after {
+  border-top-color: black !important;
+}
+.popover {
+  background-color: transparent !important;
+}
+
+.formControl {
+  border-color: #e14eca !important;
+  transition: all 0.3s cubic-bezier(0.685, 0.0473, 0.346, 1);
+  // transition: border-color 0.5s ease-in-out;
+}
+
+// input:-internal-autofill-selected {
+//   background-color: transparent !important;
+//   color: white !important;
+// }
+input:-webkit-autofill {
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 30px #1e1e2f inset !important;
+  background-image: none !important;
+  border: 1px solid #1e1e2f !important;
 }

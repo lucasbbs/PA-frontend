@@ -16,30 +16,29 @@
 
 */
 import React from 'react';
-import { Route, Switch, Redirect, useLocation } from 'react-router-dom';
+import { Route, Switch, useLocation } from 'react-router-dom';
 // javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from 'perfect-scrollbar';
 
 // core components
-import AdminNavbar from 'components/Navbars/AdminNavbar.js';
+// import RTLNavbar from 'components/Navbars/RTLNavbar.js';
 import Footer from 'components/Footer/Footer.js';
-import Sidebar from 'components/Sidebar/Sidebar.js';
+// import Sidebar from 'components/Sidebar/Sidebar.js';
 // import FixedPlugin from "components/FixedPlugin/FixedPlugin.js";
 
 import routes from 'routes.js';
 
 // import logo from 'assets/img/react-logo.png';
 import { BackgroundColorContext } from 'contexts/BackgroundColorContext';
-import { Row } from 'reactstrap';
 
 var ps;
 
-function Admin(props) {
+function RTL(props) {
   const location = useLocation();
   const mainPanelRef = React.useRef(null);
-  const [sidebarOpened, setsidebarOpened] = React.useState(
-    document.documentElement.className.indexOf('nav-open') !== -1
-  );
+  // const [sidebarOpened, setsidebarOpened] = React.useState(
+  //   document.documentElement.className.indexOf('nav-open') !== -1
+  // );
   React.useEffect(() => {
     if (navigator.platform.indexOf('Win') > -1) {
       document.documentElement.className += ' perfect-scrollbar-on';
@@ -52,6 +51,18 @@ function Admin(props) {
         ps = new PerfectScrollbar(tables[i]);
       }
     }
+    // on this page, we need on the body tag the classes .rtl and .menu-on-right
+    document.body.classList.add('rtl', 'menu-on-right');
+    // we also need the rtl bootstrap
+    // so we add it dynamically to the head
+    let head = document.head;
+    let link = document.createElement('link');
+    link.type = 'text/css';
+    link.rel = 'stylesheet';
+    link.id = 'rtl-id';
+    link.href =
+      'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-rtl/3.4.0/css/bootstrap-rtl.css';
+    head.appendChild(link);
     // Specify how to clean up after this effect:
     return function cleanup() {
       if (navigator.platform.indexOf('Win') > -1) {
@@ -59,6 +70,12 @@ function Admin(props) {
         document.documentElement.classList.add('perfect-scrollbar-off');
         document.documentElement.classList.remove('perfect-scrollbar-on');
       }
+      // when we exit this page, we need to delete the classes .rtl and .menu-on-right
+      // from the body tag
+      document.body.classList.remove('rtl', 'menu-on-right');
+      // we also need to delete the rtl bootstrap, so it does not break the other pages
+      // that do not make use of rtl
+      document.getElementById('rtl-id').remove();
     };
   });
   React.useEffect(() => {
@@ -75,13 +92,10 @@ function Admin(props) {
     }
   }, [location]);
   // this function opens and closes the sidebar on small devices
-  const toggleSidebar = () => {
-    document.documentElement.classList.toggle('nav-open');
-    setsidebarOpened(!sidebarOpened);
-  };
+
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
-      if (prop.layout === '/app') {
+      if (prop.layout === '/rtl') {
         return (
           <Route
             path={prop.layout + prop.path}
@@ -94,57 +108,39 @@ function Admin(props) {
       }
     });
   };
-  const getBrandText = (path) => {
-    // for (let i = 0; i < routes.length; i++) {
-    //   if (location.pathname.indexOf(routes[i].layout + routes[i].path) !== -1) {
-    //     return routes[i].name;
-    //   }
-    // }
-    return (
-      <Row className='justify-content-center align-items-center flex-row'>
-        <h3 className='mb-0'>Finanzen</h3>
-        <img
-          alt='Finanzen'
-          style={{ width: '110px', marginLeft: '15px', textAlign: 'center' }}
-          src={require('assets/img/logo.png').default}
-        />
-      </Row>
-    );
-  };
+  // const getBrandText = (path) => {
+  //   for (let i = 0; i < routes.length; i++) {
+  //     if (location.pathname.indexOf(routes[i].layout + routes[i].path) !== -1) {
+  //       return routes[i].name;
+  //     }
+  //   }
+  //   return 'Brand';
+  // };
   return (
-    <BackgroundColorContext.Consumer>
-      {({ color, changeColor }) => (
-        <React.Fragment>
-          <div className='wrapper'>
-            <Sidebar
-              routes={routes}
-              // logo={{
-              //   link: '',
-              //   text: 'Creative Tim',
-              //   imgSrc: logo,
-              // }}
-              toggleSidebar={toggleSidebar}
-            />
-            <div className='main-panel' ref={mainPanelRef} data={color}>
-              <AdminNavbar
-                brandText={getBrandText(location.pathname)}
-                toggleSidebar={toggleSidebar}
-                sidebarOpened={sidebarOpened}
-              />
-              <Switch>
-                {getRoutes(routes)}
-                <Redirect from='*' to='/app/dashboard' />
-              </Switch>
-              {
-                // we don't want the Footer to be rendered on map page
-                location.pathname === '/app/maps' ? null : <Footer fluid />
-              }
+    <>
+      <BackgroundColorContext.Consumer>
+        {({ color, changeColor }) => (
+          <React.Fragment>
+            <div className='wrapper'>
+              <div className='main-panel' ref={mainPanelRef} data={color}>
+                {/* <RTLNavbar
+                  brandText={getBrandText(location.pathname)}
+                  toggleSidebar={toggleSidebar}
+                  sidebarOpened={sidebarOpened}
+                /> */}
+                <Switch>{getRoutes(routes)}</Switch>
+                {
+                  // we don't want the Footer to be rendered on map page
+                  location.pathname === '/app/maps' ? null : <Footer fluid />
+                }
+              </div>
             </div>
-          </div>
-        </React.Fragment>
-      )}
-    </BackgroundColorContext.Consumer>
+            {/* <FixedPlugin bgColor={color} handleBgClick={changeColor} /> */}
+          </React.Fragment>
+        )}
+      </BackgroundColorContext.Consumer>
+    </>
   );
 }
 
-export default Admin;
+export default RTL;

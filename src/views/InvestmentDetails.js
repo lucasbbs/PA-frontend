@@ -1,19 +1,20 @@
-import React, { useEffect, useRef, useState } from "react";
-import { fetchInvestments } from "services/Investments";
-import PaginationUI from "../components/Pagination/Pagination";
-import { Button, Col, Input, Label, Row } from "reactstrap";
-import { useParams, useHistory } from "react-router-dom";
-import { reverseFormatNumber } from "../helpers/functions";
+import React, { useEffect, useRef, useState } from 'react';
+import { fetchInvestments } from 'services/Investments';
+import PaginationUI from '../components/Pagination/Pagination';
+import { Button, Col, Input, Label, Row } from 'reactstrap';
+import { useParams, useHistory } from 'react-router-dom';
+import { reverseFormatNumber } from '../helpers/functions';
 // import InputMask from 'react-input-mask';
-import NumberFormat from "react-number-format";
-import Incomes from "../components/Incomes/Incomes";
-import axios from "axios";
-import NotificationAlert from "react-notification-alert";
-import Spinner from "../components/Spinner/Spinner";
+import NumberFormat from 'react-number-format';
+import Incomes from '../components/Incomes/Incomes';
+import axios from 'axios';
+import NotificationAlert from 'react-notification-alert';
+import Spinner from '../components/Spinner/Spinner';
+import Config from '../config.json';
 
 const InvestmentDetails = () => {
   const notificationAlertRef = useRef(null);
-  const notify = (message, type = "success", place = "tc") => {
+  const notify = (message, type = 'success', place = 'tc') => {
     var options = {};
     options = {
       place: place,
@@ -23,8 +24,8 @@ const InvestmentDetails = () => {
         </div>
       ),
       type: type,
-      icon: "tim-icons icon-bell-55",
-      autoDismiss: 7
+      icon: 'tim-icons icon-bell-55',
+      autoDismiss: 7,
     };
     notificationAlertRef.current.notificationAlert(options);
   };
@@ -32,47 +33,52 @@ const InvestmentDetails = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [investmentsPerPage, setInvestmentsPerpage] = useState(15);
 
-  const [name, setName] = useState("");
-  const [broker, setBroker] = useState("");
-  const [type, setType] = useState("");
-  const [rate, setRate] = useState("");
-  const [indexer, setIndexer] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [investmentDate, setInvestmentDate] = useState("");
+  const [name, setName] = useState('');
+  const [broker, setBroker] = useState('');
+  const [type, setType] = useState('');
+  const [rate, setRate] = useState('');
+  const [indexer, setIndexer] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [investmentDate, setInvestmentDate] = useState('');
   const [initialAmount, setInitialAmount] = useState(0);
   const [accruedIncome, setAccruedIncome] = useState(0);
   const [investment, setInvestment] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [login] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo'))
+      : null
+  );
 
   const { id } = useParams();
 
   useEffect(() => {
     const getInvestmentDetails = async () => {
-      if (id !== ":id") {
+      if (id !== ':id') {
         setIsLoading(true);
         const investment = await fetchInvestments(id);
         setInvestment(investment);
-        setName(investment["invest"].name);
-        setBroker(investment["invest"].broker);
-        setType(investment["invest"].type);
-        setRate(investment["invest"].rate);
-        setIndexer(investment["invest"].indexer);
-        setDueDate(investment["invest"].due_date);
-        setInvestmentDate(investment["invest"].investment_date);
-        setInitialAmount(investment["invest"].initial_amount);
-        setAccruedIncome(investment["invest"].accrued_income);
+        setName(investment['invest'].name);
+        setBroker(investment['invest'].broker);
+        setType(investment['invest'].type);
+        setRate(investment['invest'].rate);
+        setIndexer(investment['invest'].indexer);
+        setDueDate(investment['invest'].due_date);
+        setInvestmentDate(investment['invest'].investment_date);
+        setInitialAmount(investment['invest'].initial_amount);
+        setAccruedIncome(investment['invest'].accrued_income);
 
-        const dates = investment["invest"].incomes
+        const dates = investment['invest'].incomes
           .filter((invest) => Object.values(invest)[0] !== null)
           .map((key) => Object.keys(key).map((date) => date))
           .flat()
           .map((data) => {
-            let datePartes = data.split("-");
+            let datePartes = data.split('-');
             return `${datePartes[2]}/${datePartes[1]}/${datePartes[0]}`;
           });
 
-        const IncomesTemp = investment["invest"].incomes
+        const IncomesTemp = investment['invest'].incomes
           .filter((invest) => Object.values(invest)[0] !== null)
           .map((key) => Object.values(key)[0]);
 
@@ -111,87 +117,82 @@ const InvestmentDetails = () => {
   };
   const history = useHistory();
   const handleSave = async (investmentObj) => {
-    console.log(investmentObj);
-
     const config = {
-      // headers: {
-      //   'Content-Type': 'application/json',
-      // },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${login.token}`,
+      },
     };
     await axios
-      .post(
-        `https://6r3yk.sse.codesandbox.io/api/investments`,
-        investmentObj,
-        config
-      )
+      .post(`${Config.SERVER_ADDRESS}/api/investments`, investmentObj, config)
       .then((response) => {
+        console.log(investmentObj);
         notify(`${response.data.name} investimento cadastrado com Sucesso`);
-        history.push(`/admin/investment/${response.data._id}`);
+        history.push(`/app/investment/${response.data._id}`);
       })
       .catch((err) => {
         console.log(err);
 
-        notify(err.response.data, "danger");
+        notify(err.response.data, 'danger');
       });
   };
   return (
     <>
-      {!isLoading ? "" : <Spinner />}
+      {!isLoading ? '' : <Spinner />}
 
-      <div className="react-notification-alert-container">
+      <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
       <div
-        className="content"
-        style={{ filter: `blur(${!isLoading ? 0 : 3})px` }}
+        className='content'
+        style={{ filter: `blur(${!isLoading ? 0 : 3}px)` }}
       >
         <Row>
-          <Col md="12">
+          <Col md='12'>
             <div
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "30px"
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '30px',
               }}
             >
-              <h1 style={{ marginBottom: "0" }}>{name}</h1>
+              <h1 style={{ marginBottom: '0' }}>{name}</h1>
               <Button onClick={() => console.log(accruedIncome)}>
                 <span>Editar</span>
               </Button>
             </div>
             <div
               style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
               }}
             >
-              <Col md="10">
-                <Row style={{ marginBottom: "10px" }}>
-                  <Col md="6" style={{ paddingRight: "0" }}>
+              <Col md='10'>
+                <Row style={{ marginBottom: '10px' }}>
+                  <Col md='6' style={{ paddingRight: '0' }}>
                     <Label>Nome</Label>
                     <Input
                       required
-                      style={{ backgroundColor: "#2b3553" }}
-                      type="text"
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='text'
                       value={name}
                       onChange={(e) => {
                         setName(e.target.value);
                       }}
                     />
                   </Col>
-
-                  <Col md="2" style={{ paddingRight: "0" }}>
+                  <Col md='2' style={{ paddingRight: '0' }}>
                     <Label>Corretora</Label>
                     <Input
                       required
-                      style={{ backgroundColor: "#2b3553" }}
-                      type="select"
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='select'
                       value={broker}
                       onChange={(e) => setBroker(e.target.value)}
                     >
-                      <option value="" disabled={true}>
+                      <option value='' disabled={true}>
                         Selecione uma opção
                       </option>
                       <option>Inter</option>
@@ -199,15 +200,15 @@ const InvestmentDetails = () => {
                       <option>Ativa</option>
                     </Input>
                   </Col>
-                  <Col md="2" style={{ paddingRight: "0" }}>
+                  <Col md='2' style={{ paddingRight: '0' }}>
                     <Label>Tipo</Label>
                     <Input
-                      style={{ backgroundColor: "#2b3553" }}
-                      type="select"
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='select'
                       value={type}
                       onChange={(e) => setType(e.target.value)}
                     >
-                      <option value="" disabled={true}>
+                      <option value='' disabled={true}>
                         Selecione uma opção
                       </option>
                       <option>CDB</option>
@@ -216,27 +217,27 @@ const InvestmentDetails = () => {
                       <option>Debênture</option>
                     </Input>
                   </Col>
-                  <Col md="2" style={{ paddingRight: "0" }}>
+                  <Col md='2' style={{ paddingRight: '0' }}>
                     <Label>Taxa</Label>
                     <Input
-                      style={{ backgroundColor: "#2b3553" }}
-                      type="text"
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='text'
                       value={rate}
                       onChange={(e) => setRate(e.target.value)}
                     />
                   </Col>
                 </Row>
                 <Row>
-                  <Col md="2" style={{ paddingRight: "0" }}>
+                  <Col md='2' style={{ paddingRight: '0' }}>
                     <Label>Indexador</Label>
                     <Input
                       required
-                      style={{ backgroundColor: "#2b3553" }}
-                      type="select"
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='select'
                       value={indexer}
                       onChange={(e) => setIndexer(e.target.value)}
                     >
-                      <option value="" disabled={true}>
+                      <option value='' disabled={true}>
                         Selecione uma opção
                       </option>
                       <option>CDI</option>
@@ -244,54 +245,54 @@ const InvestmentDetails = () => {
                       <option>Prefixado</option>
                     </Input>
                   </Col>
-                  <Col md="3" style={{ paddingRight: "0" }}>
+                  <Col md='3' style={{ paddingRight: '0' }}>
                     <Label>Data do investimento</Label>
                     <Input
-                      style={{ backgroundColor: "#2b3553" }}
-                      type="date"
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='date'
                       value={investmentDate.slice(0, 10)}
                       onChange={(e) => {
                         setInvestmentDate(e.target.value);
                       }}
                     />
                   </Col>
-                  <Col md="3" style={{ paddingRight: "0" }}>
+                  <Col md='3' style={{ paddingRight: '0' }}>
                     <Label>Data de vencimento</Label>
                     <Input
-                      style={{ backgroundColor: "#2b3553" }}
-                      type="date"
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='date'
                       value={dueDate.slice(0, 10)}
                       onChange={(e) => setDueDate(e.target.value)}
                     />
                   </Col>
-                  <Col md="2" style={{ paddingRight: "0" }}>
+                  <Col md='2' style={{ paddingRight: '0' }}>
                     <Label>Montante Inicial</Label>
                     <NumberFormat
-                      style={{ backgroundColor: "#2b3553" }}
+                      style={{ backgroundColor: '#2b3553' }}
                       onChange={(e) => setInitialAmount(e.target.value)}
-                      type="text"
+                      type='text'
                       value={initialAmount}
-                      placeholder="R$0.00"
-                      thousandSeparator={"."}
-                      decimalSeparator={","}
-                      prefix={"R$"}
+                      placeholder='R$0.00'
+                      thousandSeparator={'.'}
+                      decimalSeparator={','}
+                      prefix={'R$'}
                       customInput={Input}
                     />
                   </Col>
-                  <Col md="2" style={{ paddingRight: "0" }}>
+                  <Col md='2' style={{ paddingRight: '0' }}>
                     <Label>Juros acumulados</Label>
                     <NumberFormat
                       readOnly
                       style={{
-                        backgroundColor: "#2b3553",
-                        color: "rgba(255, 255, 255, 0.8)"
+                        backgroundColor: '#2b3553',
+                        color: 'rgba(255, 255, 255, 0.8)',
                       }}
-                      type="text"
+                      type='text'
                       value={accruedIncome}
                       // placeholder="R$0.00"
-                      thousandSeparator={"."}
-                      decimalSeparator={","}
-                      prefix={"R$"}
+                      thousandSeparator={'.'}
+                      decimalSeparator={','}
+                      prefix={'R$'}
                       customInput={Input}
                     />
                   </Col>
@@ -299,11 +300,11 @@ const InvestmentDetails = () => {
               </Col>
             </div>
 
-            {investment["isValid"] ? (
+            {investment['isValid'] ? (
               <>
                 <Incomes
                   id={id}
-                  incomesToBeUpdated={investment["invest"].incomes}
+                  incomesToBeUpdated={investment['invest'].incomes}
                   incomes={currentincomes}
                   numberPerPage={investmentsPerPage}
                   setNumberPerPage={setNumberPerPage}
@@ -319,11 +320,11 @@ const InvestmentDetails = () => {
                 />
               </>
             ) : (
-              <div className="mt-3">
-                <Row className="justify-content-center align-items-center m-80">
+              <div className='mt-3'>
+                <Row className='justify-content-center align-items-center m-80'>
                   <Button
-                    className="mt-30"
-                    color="success"
+                    className='mt-30'
+                    color='success'
                     onClick={() =>
                       handleSave({
                         name,
@@ -335,8 +336,8 @@ const InvestmentDetails = () => {
                         due_date: dueDate,
                         initial_amount: reverseFormatNumber(
                           initialAmount,
-                          "pt-BR"
-                        )
+                          'pt-BR'
+                        ),
                       })
                     }
                   >

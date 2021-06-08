@@ -19,45 +19,46 @@ import Dashboard from 'views/Dashboard.js';
 import Icons from 'views/Icons.js';
 import Map from 'views/Map.js';
 import Notifications from 'views/Notifications.js';
-// import Rtl from 'views/Rtl.js';
+// import Rtl from 'views/Rtl2.js';
 import TableList from 'views/TableList.js';
 import Typography from 'views/Typography.js';
 import UserProfile from 'views/UserProfile.js';
 import Investments from 'views/InvestmentsList.js';
 import InvestmentDetails from 'views/InvestmentDetails';
+import Login from 'views/Login?#';
 
 var routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    // rtlName: 'لوحة القيادة',
+    rtlName: 'لوحة القيادة',
     icon: 'tim-icons icon-chart-pie-36',
     component: Dashboard,
-    layout: '/admin',
+    layout: '/app',
   },
   {
     path: '/investments',
     name: 'Investimentos',
-    // rtlName: 'لوحة القيادة',
+    rtlName: 'لوحة القيادة',
     icon: 'tim-icons icon-wallet-43',
     component: Investments,
-    layout: '/admin',
+    layout: '/app',
   },
   {
     path: '/investment/:id',
     name: 'Novo Investimento',
-    // rtlName: 'لوحة القيادة',
+    rtlName: 'لوحة القيادة',
     icon: 'tim-icons icon-wallet-43',
     component: InvestmentDetails,
-    layout: '/admin',
+    layout: '/app',
   },
   {
     path: '/icons',
     name: 'Icons',
-    // rtlName: 'الرموز',
+    rtlName: 'الرموز',
     icon: 'tim-icons icon-atom',
     component: Icons,
-    layout: '/admin',
+    layout: '/app',
   },
   {
     path: '/map',
@@ -65,7 +66,7 @@ var routes = [
     rtlName: 'خرائط',
     icon: 'tim-icons icon-pin',
     component: Map,
-    layout: '/admin',
+    layout: '/app',
   },
   {
     path: '/notifications',
@@ -73,7 +74,7 @@ var routes = [
     rtlName: 'إخطارات',
     icon: 'tim-icons icon-bell-55',
     component: Notifications,
-    layout: '/admin',
+    layout: '/app',
   },
   {
     path: '/user-profile',
@@ -81,7 +82,7 @@ var routes = [
     rtlName: 'ملف تعريفي للمستخدم',
     icon: 'tim-icons icon-single-02',
     component: UserProfile,
-    layout: '/admin',
+    layout: '/app',
   },
   {
     path: '/tables',
@@ -89,7 +90,7 @@ var routes = [
     rtlName: 'قائمة الجدول',
     icon: 'tim-icons icon-puzzle-10',
     component: TableList,
-    layout: '/admin',
+    layout: '/app',
   },
   {
     path: '/typography',
@@ -97,7 +98,15 @@ var routes = [
     rtlName: 'طباعة',
     icon: 'tim-icons icon-align-center',
     component: Typography,
-    layout: '/admin',
+    layout: '/app',
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    rtlName: 'لوحة القيادة',
+    icon: 'tim-icons icon-chart-pie-36',
+    component: Login,
+    layout: '/login',
   },
   // {
   //   path: '/rtl-support',

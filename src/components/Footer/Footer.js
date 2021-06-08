@@ -17,16 +17,25 @@
 */
 /*eslint-disable*/
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 
 // reactstrap components
 import { Container, Nav, NavItem, NavLink } from 'reactstrap';
 
 function Footer() {
+  let history = useHistory();
+  window.addEventListener('storage', () => {
+    // When local storage changes, dump the list to
+    // the console.
+    if (!JSON.parse(window.localStorage.getItem('userInfo'))) {
+      history.push('/app/dashboard');
+    }
+  });
   return (
     <footer className='footer'>
       <Container fluid>
         <Nav>
-          <NavItem>
+          {/* <NavItem>
             <NavLink href='https://www.creative-tim.com/?ref=bdr-user-archive-footer'>
               Creative Tim
             </NavLink>
@@ -40,7 +49,7 @@ function Footer() {
             <NavLink href='https://www.creative-tim.com/blog?ref=bdr-user-archive-footer'>
               Blog
             </NavLink>
-          </NavItem>
+          </NavItem> */}
         </Nav>
         {/* <div className="copyright">
           © {new Date().getFullYear()} made with{" "}

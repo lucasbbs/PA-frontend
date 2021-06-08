@@ -1,8 +1,19 @@
-import axios from "axios";
+import axios from 'axios';
+import Config from '../config.json';
 
-export async function fetchInvestments(id = "") {
+export async function fetchInvestments(id = '', login) {
+  let config = {};
+  if (login !== undefined) {
+    config = {
+      headers: {
+        Authorization: `Bearer ${login.token}`,
+      },
+    };
+  }
+
   const res = await axios(
-    `https://6r3yk.sse.codesandbox.io/api/investments/${id}`
+    `${Config.SERVER_ADDRESS}/api/investments/${id}`,
+    config
   );
   return res.data;
 }

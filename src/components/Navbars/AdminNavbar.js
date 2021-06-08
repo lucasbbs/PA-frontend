@@ -42,7 +42,8 @@ import {
   ModalBody,
   Row,
 } from 'reactstrap';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import { logout } from '../../services/auth';
 // import { listInvestments } from '../../actions/investmentAction';
 
 function AdminNavbar(props) {
@@ -53,7 +54,7 @@ function AdminNavbar(props) {
   const [collapseOpen, setcollapseOpen] = useState(false);
   const [modalSearch, setmodalSearch] = useState(false);
   const [color, setcolor] = useState('navbar-transparent');
-  const [filter, setFilter] = useState('');
+  // const [filter, setFilter] = useState('');
   useEffect(
     () => {
       // dispatch(listInvestments());
@@ -91,7 +92,7 @@ function AdminNavbar(props) {
   const history = useHistory();
   const handleFilter = (e) => {
     localStorage.setItem('filter', JSON.stringify(e.target.value));
-    history.push(`/admin/investments/`);
+    history.push(`/app/investments/`);
     window.location.reload(false);
   };
   return (
@@ -183,14 +184,22 @@ function AdminNavbar(props) {
                   <p className='d-lg-none'>Log out</p>
                 </DropdownToggle>
                 <DropdownMenu className='dropdown-navbar' right tag='ul'>
-                  <NavLink tag='li'>
-                    <DropdownItem className='nav-item'>Profile</DropdownItem>
+                  <NavLink tag='li' to='/app/user-profile'>
+                    <Link to='/app/user-profile'>
+                      <DropdownItem className='nav-item'>Profile</DropdownItem>
+                    </Link>
                   </NavLink>
                   <NavLink tag='li'>
                     <DropdownItem className='nav-item'>Settings</DropdownItem>
                   </NavLink>
                   <DropdownItem divider tag='li' />
-                  <NavLink tag='li'>
+                  <NavLink
+                    tag='li'
+                    onClick={(e) => {
+                      logout();
+                      history.push('/login/login');
+                    }}
+                  >
                     <DropdownItem className='nav-item'>Log out</DropdownItem>
                   </NavLink>
                 </DropdownMenu>
